@@ -202,3 +202,123 @@ header h1 {
   color: #b6bbc5;
   cursor: not-allowed;
 }
+
+/* ---- 顶层视图切换 ---- */
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0 16px;
+}
+
+.tabs .tab {
+  padding: 8px 18px;
+  border: 1px solid #c3c8d2;
+  background: #fff;
+  color: #1f2430;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.tabs .tab.active {
+  border-color: #2f6fed;
+  background: #2f6fed;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ---- 现场旁白采集 ---- */
+
+.recorder h2 {
+  margin: 4px 0 4px;
+  font-size: 20px;
+}
+
+.recorder .detail {
+  opacity: 0.8;
+}
+
+.recorder-console {
+  background: #fff;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.recorder-console p {
+  margin: 0 0 12px;
+}
+
+.recorder-console button {
+  padding: 6px 14px;
+  border: 1px solid #2f6fed;
+  background: #2f6fed;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.recorder-console button.ghost {
+  border-color: #c3c8d2;
+  background: #fff;
+  color: #1f2430;
+}
+
+.recorder-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.recorder .status {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14px;
+  color: #1f2430;
+}
+
+.recorder .status.recording {
+  color: #b01f24;
+  font-weight: 600;
+}
+
+.recorder .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #e5484d;
+  margin-right: 6px;
+  animation: rec-blink 1.2s ease-in-out infinite;
+}
+
+@keyframes rec-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.meter {
+  height: 10px;
+  background: #eef0f3;
+  border: 1px solid #e2e5ea;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.meter-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #46a758, #e5b93c 70%, #e5484d);
+  transition: width 60ms linear;
+}
+
+.recorder-console audio {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+}

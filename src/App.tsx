@@ -5,6 +5,7 @@ import {
   type Cue,
 } from './solver/solve';
 import { parseCues, toCuesJson } from './solver/cues';
+import { NarrationPanel } from './narration/NarrationPanel';
 
 interface Draft {
   cues: Cue[];
@@ -28,6 +29,7 @@ function fmtTime(ms: number): string {
 }
 
 export function App(): JSX.Element {
+  const [view, setView] = useState<'cues' | 'narration'>('cues');
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pins, setPins] = useState<Map<number, number>>(new Map());
   const [importError, setImportError] = useState(false);
@@ -130,152 +132,176 @@ export function App(): JSX.Element {
 
   return (
     <div className="page">
-      <header>
-        <h1>字幕固定与去重叠</h1>
-        <p className="sub">
-          锁定少数字幕起点，求解器令固定项精确命中、全天内相邻不重叠，最小化相对已采纳稿的绝对位移总和。
-        </p>
-      </header>
-
-      <section className="toolbar">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="application/json,.json"
-          onChange={(e) => void onFile(e.target.files?.[0])}
-        />
+      <nav className="tabs" aria-label="视图切换">
         <button
           type="button"
-          disabled={!draft || preview?.kind !== 'ready'}
-          onClick={adopt}
+          className={view === 'cues' ? 'tab active' : 'tab'}
+          onClick={() => setView('cues')}
         >
-          采纳为新基线
+          字幕编辑
         </button>
-        <button type="button" disabled={!draft} onClick={downloadAdopted}>
-          下载同结构 JSON
+        <button
+          type="button"
+          className={view === 'narration' ? 'tab active' : 'tab'}
+          onClick={() => setView('narration')}
+        >
+          现场旁白采集
         </button>
-        {draft && preview?.kind === 'ready' && (
-          <button
-            type="button"
-            onClick={() => downloadStarts(preview.starts)}
-          >
-            下载预览结果
-          </button>
-        )}
-        {draft && (
-          <span className="meta">
-            {draft.cues.length.toLocaleString()} 条 · 固定点 {pins.size} 个
-          </span>
-        )}
-      </section>
+      </nav>
 
-      {importError && (
-        <div className="banner error">
-          INVALID_CUES — 导入非法，已清空预览；下方保留最近一次合法工作稿。
-        </div>
-      )}
-      {!importError && draft && preview?.kind === 'infeasible' && (
-        <div className="banner error">
-          INFEASIBLE — 固定点约束不可行（检查临界冲突的固定点），已清空预览。
-        </div>
-      )}
-
-      {!draft && !importError && (
-        <div className="empty">
-          导入根对象仅含 cues 的 JSON（1–20000 项；start 严格递增，duration 1–60000，text 1–200 字符）。
-        </div>
-      )}
-
-      {draft && (
+      {view === 'narration' ? (
+        // 切回字幕页时面板卸载，幂等关闭音轨与音频图并撤销对象 URL
+        <NarrationPanel />
+      ) : (
         <>
-          {preview?.kind === 'ready' && (
-            <div className="banner ok">
-              预览就绪 · 相对已采纳稿绝对位移总和 {preview.cost.toLocaleString()} ms
+          <header>
+            <h1>字幕固定与去重叠</h1>
+            <p className="sub">
+              锁定少数字幕起点，求解器令固定项精确命中、全天内相邻不重叠，最小化相对已采纳稿的绝对位移总和。
+            </p>
+          </header>
+
+          <section className="toolbar">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json,.json"
+              onChange={(e) => void onFile(e.target.files?.[0])}
+            />
+            <button
+              type="button"
+              disabled={!draft || preview?.kind !== 'ready'}
+              onClick={adopt}
+            >
+              采纳为新基线
+            </button>
+            <button type="button" disabled={!draft} onClick={downloadAdopted}>
+              下载同结构 JSON
+            </button>
+            {draft && preview?.kind === 'ready' && (
+              <button
+                type="button"
+                onClick={() => downloadStarts(preview.starts)}
+              >
+                下载预览结果
+              </button>
+            )}
+            {draft && (
+              <span className="meta">
+                {draft.cues.length.toLocaleString()} 条 · 固定点 {pins.size} 个
+              </span>
+            )}
+          </section>
+
+          {importError && (
+            <div className="banner error">
+              INVALID_CUES — 导入非法，已清空预览；下方保留最近一次合法工作稿。
             </div>
           )}
-          <div
-            className="list"
-            onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-          >
-            <div
-              className="list-inner"
-              style={{ height: draft.cues.length * ROW_H }}
-            >
-              {Array.from(
-                { length: visibleRange.to - visibleRange.from },
-                (_, k) => {
-                  const i = visibleRange.from + k;
-                  const cue = draft.cues[i];
-                  const base = draft.base[i];
-                  const pinned = pins.has(i);
-                  const pinValue = pins.get(i);
-                  const newStart =
-                    preview?.kind === 'ready' ? preview.starts[i] : null;
-                  const delta = newStart === null ? null : newStart - base;
-                  const overlapPrev =
-                    i > 0 && base < draft.base[i - 1] + draft.cues[i - 1].duration;
-                  return (
-                    <div
-                      key={i}
-                      className={
-                        'row' + (pinned ? ' pinned' : '') + (delta !== 0 && newStart !== null ? ' moved' : '')
-                      }
-                      style={{
-                        transform: `translateY(${i * ROW_H}px)`,
-                        height: ROW_H,
-                      }}
-                    >
-                      <div className="idx">#{i}</div>
-                      <div className="times">
-                        <div className="text" title={cue.text}>
-                          {cue.text}
-                        </div>
-                        <div className="starts">
-                          <span className={overlapPrev ? 'bad' : ''}>
-                            基线 {fmtTime(base)}
-                          </span>
-                          <span className="dur">时长 {cue.duration} ms</span>
-                          {newStart !== null && (
-                            <span className={delta === 0 ? 'same' : 'shift'}>
-                              预览 {fmtTime(newStart)}
-                              {delta !== 0 && (
-                                <em>
-                                  {' '}
-                                  {delta! > 0 ? '+' : ''}
-                                  {delta}
-                                </em>
-                              )}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div className="lock">
-                        <label>
-                          固定起点
-                          <input
-                            type="number"
-                            min={0}
-                            max={DAY_MS}
-                            step={1}
-                            value={pinned ? pinValue : ''}
-                            placeholder="—"
-                            onChange={(e) => setPin(i, e.target.value)}
-                          />
-                        </label>
-                        <button
-                          type="button"
-                          disabled={!pinned}
-                          onClick={() => removePin(i)}
-                        >
-                          解除
-                        </button>
-                      </div>
-                    </div>
-                  );
-                },
-              )}
+          {!importError && draft && preview?.kind === 'infeasible' && (
+            <div className="banner error">
+              INFEASIBLE — 固定点约束不可行（检查临界冲突的固定点），已清空预览。
             </div>
-          </div>
+          )}
+
+          {!draft && !importError && (
+            <div className="empty">
+              导入根对象仅含 cues 的 JSON（1–20000 项；start 严格递增，duration 1–60000，text 1–200 字符）。
+            </div>
+          )}
+
+          {draft && (
+            <>
+              {preview?.kind === 'ready' && (
+                <div className="banner ok">
+                  预览就绪 · 相对已采纳稿绝对位移总和 {preview.cost.toLocaleString()} ms
+                </div>
+              )}
+              <div
+                className="list"
+                onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+              >
+                <div
+                  className="list-inner"
+                  style={{ height: draft.cues.length * ROW_H }}
+                >
+                  {Array.from(
+                    { length: visibleRange.to - visibleRange.from },
+                    (_, k) => {
+                      const i = visibleRange.from + k;
+                      const cue = draft.cues[i];
+                      const base = draft.base[i];
+                      const pinned = pins.has(i);
+                      const pinValue = pins.get(i);
+                      const newStart =
+                        preview?.kind === 'ready' ? preview.starts[i] : null;
+                      const delta = newStart === null ? null : newStart - base;
+                      const overlapPrev =
+                        i > 0 && base < draft.base[i - 1] + draft.cues[i - 1].duration;
+                      return (
+                        <div
+                          key={i}
+                          className={
+                            'row' + (pinned ? ' pinned' : '') + (delta !== 0 && newStart !== null ? ' moved' : '')
+                          }
+                          style={{
+                            transform: `translateY(${i * ROW_H}px)`,
+                            height: ROW_H,
+                          }}
+                        >
+                          <div className="idx">#{i}</div>
+                          <div className="times">
+                            <div className="text" title={cue.text}>
+                              {cue.text}
+                            </div>
+                            <div className="starts">
+                              <span className={overlapPrev ? 'bad' : ''}>
+                                基线 {fmtTime(base)}
+                              </span>
+                              <span className="dur">时长 {cue.duration} ms</span>
+                              {newStart !== null && (
+                                <span className={delta === 0 ? 'same' : 'shift'}>
+                                  预览 {fmtTime(newStart)}
+                                  {delta !== 0 && (
+                                    <em>
+                                      {' '}
+                                      {delta! > 0 ? '+' : ''}
+                                      {delta}
+                                    </em>
+                                  )}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="lock">
+                            <label>
+                              固定起点
+                              <input
+                                type="number"
+                                min={0}
+                                max={DAY_MS}
+                                step={1}
+                                value={pinned ? pinValue : ''}
+                                placeholder="—"
+                                onChange={(e) => setPin(i, e.target.value)}
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              disabled={!pinned}
+                              onClick={() => removePin(i)}
+                            >
+                              解除
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>
