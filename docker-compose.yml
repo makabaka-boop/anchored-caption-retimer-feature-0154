@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      target: web
+    image: cue-lock-web
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped
+
+  # One-off acceptance service: runs typecheck, production build and the full
+  # Vitest suite, then exits. Usage:  docker compose --profile verify run --rm verify
+  verify:
+    profiles: ["verify"]
+    build:
+      context: .
+      target: verify
+    image: cue-lock-verify
