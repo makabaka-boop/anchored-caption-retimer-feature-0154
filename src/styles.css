@@ -202,3 +202,273 @@ header h1 {
   color: #b6bbc5;
   cursor: not-allowed;
 }
+
+/* ---- top-level tabs ---------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid #e2e5ea;
+}
+
+.tab {
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: #5b6270;
+  font-size: 14px;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.tab:hover {
+  color: #2f6fed;
+}
+
+.tab.active {
+  background: #fff;
+  border-color: #e2e5ea;
+  color: #2f6fed;
+  font-weight: 600;
+}
+
+/* ---- narration booth --------------------------------------------------- */
+
+.booth {
+  background: #fff;
+  border: 1px solid #e2e5ea;
+  border-radius: 8px;
+  padding: 18px 20px 24px;
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+}
+
+.steps li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  background: #f1f3f6;
+  color: #8a909c;
+  font-size: 12px;
+}
+
+.steps li.done {
+  background: #e8f5ec;
+  color: #1d6b30;
+}
+
+.steps li.current {
+  background: #e8f0fe;
+  color: #1f4fb3;
+  font-weight: 600;
+}
+
+.steps .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.booth-panel {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.booth-idle,
+.booth-status,
+.booth-rec,
+.booth-review,
+.booth-error {
+  width: 100%;
+  max-width: 560px;
+  text-align: center;
+}
+
+.booth-idle p {
+  color: #5b6270;
+  font-size: 13px;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.booth .primary {
+  padding: 8px 22px;
+  border: 1px solid #2f6fed;
+  background: #2f6fed;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.booth .danger {
+  padding: 8px 22px;
+  border: 1px solid #e5484d;
+  background: #e5484d;
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.booth button:disabled {
+  border-color: #c3c8d2;
+  background: #e9ebf0;
+  color: #8a909c;
+  cursor: not-allowed;
+}
+
+.booth-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #5b6270;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #c3c8d2;
+  border-top-color: #2f6fed;
+  border-radius: 50%;
+  animation: booth-spin 0.8s linear infinite;
+}
+
+@keyframes booth-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rec-readout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.rec-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #c3c8d2;
+}
+
+.rec-dot.live {
+  background: #e5484d;
+  animation: rec-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.rec-time {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 30px;
+  color: #1f2430;
+}
+
+.rec-hint {
+  font-size: 12px;
+  color: #8a909c;
+}
+
+.meter {
+  height: 14px;
+  border-radius: 7px;
+  background: #f1f3f6;
+  border: 1px solid #e2e5ea;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.meter-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #46a758 0%, #46a758 70%, #e5484d 100%);
+  transition: width 0.08s linear;
+}
+
+.rec-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.rec-actions button:not(.primary):not(.danger) {
+  padding: 8px 18px;
+  border: 1px solid #c3c8d2;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.review-title {
+  margin: 0 0 12px;
+  color: #1d6b30;
+  font-weight: 600;
+}
+
+.review-player {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.review-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: center;
+  margin: 0 0 18px;
+  font-size: 12px;
+  color: #5b6270;
+}
+
+.review-meta dt {
+  font-weight: 600;
+}
+
+.review-meta dt::after {
+  content: '：';
+}
+
+.review-meta dd {
+  margin: 0 12px 0 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.booth-error .error-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #b01f24;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+
+.booth-error .error-msg {
+  color: #5b6270;
+  font-size: 13px;
+  margin: 0 0 18px;
+  line-height: 1.7;
+}
+
